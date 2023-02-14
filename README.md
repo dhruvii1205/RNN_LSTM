@@ -61,7 +61,6 @@ def create_x_y(data_length, dataset_scaled):
     
 ```
 * X and y separation, with x data we will predict y value. 
-* We will get a list of X and Y will be their expected output. 
 
 ### Inversing MinMaxScaler
 ```
@@ -72,7 +71,7 @@ def inverse_fit_transform(predict,dataset):
   print(predict.shape)
 ```
 * To get the actual value we will have to inverse the fit transform function. 
-* We have **minverse_transform** to do that.
+* We have **inverse_transform** to do that.
 
 ### Predicting the values
 ```
@@ -91,7 +90,7 @@ def prediction(X_train, model, model_name, weights):
 
 ### What Train or predict will do? 
 * By giving train as a parameter, the model will be trained and the weights will be saved to a specific path.
-* BY giving predict as a parameter, we will use the saved weights by using **load_weight** function and predict the values for train and test dataset along with plotting the output for both the case. 
+* By giving predict as a parameter, we will use the saved weights by using **load_weight** function and predict the values for train and test dataset along with plotting the output for both the case. 
 * We will also print the **MSE (Mean Sqaured Error)** to understand which model is giving better result. 
 
 ### What to expect after giving input?

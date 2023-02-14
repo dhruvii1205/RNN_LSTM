@@ -1,7 +1,6 @@
-sklearn
+scikit-learn
 numpy
 pandas
-sklearn
 matplotlib
 argparse
-tensorflow.keras
+tensorflow

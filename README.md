@@ -4,7 +4,7 @@ stock price predictions with rnn and lstm model.
 ### How to set-up the project?
 * Firstly, download the repository. Refer this link if stuck: https://blog.hubspot.com/website/download-from-github
 * After downloading the repository, download the libraries mentioned in requirements.txt file, if not.
-* Open the stock_price_prediction.py file in any editor and run the code. 
+* Open the stock_price_prediction.py file in any editor and run the code on local computer. 
 * As the script takes dynamic arguements as input write **python3 stock_price_prediction_final.py(file name with extension) -c Tesla.csv (data file name wih extension) -m rnn (model name which you waant to use in lower-case) -mode train(train/predict)**
 * If you want to try LSTM model then insert lstm with -m
 

@@ -15,17 +15,23 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 import warnings
 warnings.filterwarnings("ignore")
-import os
-import csv
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import SimpleRNN
-from keras.layers import Dropout
-from keras.layers import LSTM
 import argparse
 from keras.models import Model
 from keras.models import load_model
 from sklearn.metrics import mean_squared_error
+from feature_selection import convert_datetime_object
+from splitting  import train_test_splitting
+from reshaping_data import reshape
+from preprocessing_data import preprocessing_data
+from x_y_separtaion import create_x_y
+from rnn_model_creation import rnn_model
+from model_fitting import model_fitting
+from inverse_transform import inverse_fit_transform
+from plotting_data import plotting
+from predictions import prediction
+from lstm_model import lstm_model
+#from file import reading_file_csv
+
 
 parser = argparse.ArgumentParser(description='choosing correct parameters for csv type(-c) model(-m) and mode(-mode)')
 parser.add_argument('-c','--csv_file',type=str, required=True, help='enter the csv file name with extension')
@@ -34,210 +40,29 @@ parser.add_argument('-mode', '--mode', type=str, required=True, help='choose the
 
 args = parser.parse_args()
 
-# Converting to datetime object and Feature selection
-
-def convert_datetime_object(data, length_train_validation):
-  train_test_data = data[:length_train_validation].iloc[:,:2] 
-  train_test_data['Date'] = pd.to_datetime(train_test_data['Date'])  # converting to date time object
-  return train_test_data    #returning the data
-
-# Splitting data
-
-# 30% test and 70% train
-
-
-def train_test_splitting(data):
-  len_data = len(data)
-  split_ratio = 0.7           # %70 train + %30 validation
-  length_train = round(len_data * split_ratio)  
-  length_validation = len_data - length_train
-  print("Data length :", len_data)
-  print("Train data length :", length_train)
-  print("Validation data lenth :", length_validation)
-  return length_train, length_validation
-
-# Reshaping data 
-
-# (1182,) to (1182,1) making it a 2d array
-
-
-def reshape(data_reshape):   #reshapeing the data
-  dataset = data_reshape.Open.values
-  dataset = np.reshape(dataset, (-1,1))
-  print(dataset.shape)
-  return dataset
-
-# Normalising data
-
-# (0-1)
-
-def preprocessing_data(dataset):
-  scaler = MinMaxScaler(feature_range = (0,1)) #setting range from 0 to 1 
-
-  # scaling dataset
-  dataset_scaled = scaler.fit_transform(dataset)
-
-  return dataset_scaled
-
-
-# Adding data to x and y 
-
-# x -> input & y -> output
-
-
-def create_x_y(data_length, dataset_scaled):
-  X_data = []
-  y_data = []
-
-  time_step = 1
-
-  for i in range(time_step, data_length):
-      X_data.append(dataset_scaled[i-time_step:i,0])
-      y_data.append(dataset_scaled[i,0])
-    
-  # convert list to array
-
-  X_data, y_data = np.array(X_data), np.array(y_data)
-
-  print("Shape of X_data before reshape :",X_data.shape)
-  print("Shape of y_data before reshape :",y_data.shape)
-
-  # making the data 3d so that when we change the timestamp we can work fluently.
-  #if we choose timestamp = 50 then out array will look like (1182,50,1)
-
-  X_data = np.reshape(X_data, (X_data.shape[0], X_data.shape[1],1)) 
-  y_data = np.reshape(y_data, (y_data.shape[0],1))
-
-  print("Shape of X_train after reshape :",X_data.shape)
-  print("Shape of y_train after reshape :",y_data.shape)
-
-  return X_data, y_data
-
-# RNN model creation
-
-def rnn_model(X_train):    
-  # initializing the RNN
-  model = Sequential()
-
-  # adding first RNN layer and dropout regulatization
-  model.add(
-      SimpleRNN(units = 50,
-                activation = "tanh", 
-                return_sequences = True, 
-                input_shape = (X_train.shape[1],1))
-              )
-
-  model.add(Dropout(0.2))
-
-  model.add(
-      SimpleRNN(units = 50, 
-                activation = "tanh", 
-                return_sequences = True)
-              )
-
-  model.add(Dropout(0.2))
-
-  model.add(
-      SimpleRNN(units = 50, 
-                activation = "tanh", 
-                return_sequences = True)
-              )
-
-  model.add(Dropout(0.2))
-
-  model.add(SimpleRNN(units = 50))
-
-  model.add(Dropout(0.2))
-
-  # output layer
-  model.add(Dense(units = 1))
-  #compiler
-  model.compile(
-      optimizer = "adam", 
-      loss = "mean_squared_error",
-      metrics = ["accuracy"])
-  
-  return model
-  
-def model_fitting(model, X_train,y_train, epochs, batch_size):
-  # fitting the RNN
-  history = model.fit(X_train, y_train, epochs = epochs, batch_size = batch_size)
-  return history, model
-
-
-# Prediction
-def prediction(X_train, model, model_name, weights):
-  if model_name == 'rnn':
-    model.load_weights(weights)
-    predicted = model.predict(X_train)
-    return predicted
-  else:
-    model.load_weights(weights)
-    predict = model.predict(X_train)
-    return predict
-  
-#Inversing the fit transfrom 
-
-#Actual value from 0-1
-
-def inverse_fit_transform(predict,dataset):
-  scaler = MinMaxScaler(feature_range = (0,1))
-  fit_scaler = scaler.fit(dataset)
-  predict = fit_scaler.inverse_transform(predict) # scaling back from 0-1 to original
-  print(predict.shape)
-
-  return predict
-
-# Data Plotting
-
-def plotting(y_pred, y_train,label_x,label_y, title):
-
-  # visualisation
-  plt.figure(figsize = (16,10))
-  plt.plot(y_pred, color = "b", label = label_x)
-  plt.plot(y_train, color = "g", label = label_y)
-  plt.xlabel("Days")
-  plt.ylabel("Opening price")
-  plt.title(title)
-  plt.legend()
-  plt.show()
-
-# LSTM model 
-
-def lstm_model(X_train):
-  model_lstm = Sequential()
-  model_lstm.add(
-      LSTM(64,return_sequences=True,input_shape = (X_train.shape[1],1))) #64 lstm neuron block
-  model_lstm.add(
-      LSTM(64, return_sequences= False))
-  model_lstm.add(Dense(32))
-  model_lstm.add(Dense(1))
-  model_lstm.compile(loss = "mean_squared_error", optimizer = "adam", metrics = ["accuracy"])
-
-  return model_lstm
 
 # Function calls 
 
 def data_reading(filename, model_name, mode, weights, weights1):
   data = pd.read_csv(filename) # reading the csv file
   data.info() # to understand the coulumns and their type
-
   train_length, validation_length = train_test_splitting(data)    # train_test_split data 
 
   train_data = convert_datetime_object(data, train_length)   # getting train data
   validation_data = convert_datetime_object(data, validation_length)   # getting validation data
 
   dataset_train = reshape(train_data)
-
   dataset_train_scaled = preprocessing_data(dataset_train)  # normalising data between 0 and 1
   
   X_train, y_train =  create_x_y(train_length, dataset_train_scaled)
- 
+
   if model_name == 'rnn':
     if mode == 'train':
-      # RNN model
       epochs = 50
       batch_size = 32
+
+      # RNN model
+      
       model = rnn_model(X_train)   
 
       history, model= model_fitting(model, X_train, y_train, epochs, batch_size)
@@ -247,28 +72,32 @@ def data_reading(filename, model_name, mode, weights, weights1):
 
     if mode == 'predict':
       
-      model = rnn_model(X_train)  
-      y_pred = prediction(X_train, model, model_name, weights)
+      try:
+        model = rnn_model(X_train)  
+        y_pred = prediction(X_train, model, model_name, weights)
 
-      y_pred = inverse_fit_transform(y_pred, dataset_train)
-      y_train = inverse_fit_transform(y_train, dataset_train)
+        y_pred = inverse_fit_transform(y_pred, dataset_train)
+        y_train = inverse_fit_transform(y_train, dataset_train)
 
-      plotting(y_pred, y_train,'y_pred','y_train','train data predictions with RNN')
-      print('Mean sqaure error of y_train and predicted value for RNN is: ', mean_squared_error(y_train, y_pred))
+        plotting(y_pred, y_train,'y_pred','y_train','train data predictions with RNN')
+        print('Mean sqaure error of y_train and predicted value for RNN is: ', mean_squared_error(y_train, y_pred))
 
-      reshaped_vaidation_data = reshape(validation_data)
-      scaled_dataset_validation = preprocessing_data(reshaped_vaidation_data)
+        reshaped_vaidation_data = reshape(validation_data)
+        scaled_dataset_validation = preprocessing_data(reshaped_vaidation_data)
   
-      X_test, y_test = create_x_y(validation_length, scaled_dataset_validation)   #getting test data and reshaping them
+        X_test, y_test = create_x_y(validation_length, scaled_dataset_validation)   #getting test data and reshaping them
 
-      y_pred_of_test = prediction(X_test, model, model_name, weights)   #predicting the output
+        y_pred_of_test = prediction(X_test, model, model_name, weights)   #predicting the output
 
-      y_pred_of_test = inverse_fit_transform(y_pred_of_test, dataset_train)   #inverse_transform to get the actual value 
-      y_test = inverse_fit_transform(y_test, dataset_train)
+        y_pred_of_test = inverse_fit_transform(y_pred_of_test, dataset_train)   #inverse_transform to get the actual value 
+        y_test = inverse_fit_transform(y_test, dataset_train)
 
-      plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','test data predictios with RNN')
-      print('Mean sqaure error of y_test and predicted value for RNN is: ', mean_squared_error(y_test, y_pred_of_test))
-      
+        plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','test data predictios with RNN')
+        print('Mean sqaure error of y_test and predicted value for RNN is: ', mean_squared_error(y_test, y_pred_of_test))
+      except:
+        print('You might have chose predict mode before train mode. Train the model first before predicting values.')
+  
+  
   if model_name == 'lstm':
     if mode == 'train':
       epochs = 10
@@ -281,28 +110,30 @@ def data_reading(filename, model_name, mode, weights, weights1):
   
     if mode == 'predict':
       
-      model_lstm = lstm_model(X_train) 
-      y_pred = prediction(X_train, model_lstm, model_name, weights1)
+      try:
+        model_lstm = lstm_model(X_train) 
+        y_pred = prediction(X_train, model_lstm, model_name, weights1)
 
-      y_pred = inverse_fit_transform(y_pred, dataset_train)
-      y_train = inverse_fit_transform(y_train, dataset_train)
+        y_pred = inverse_fit_transform(y_pred, dataset_train)
+        y_train = inverse_fit_transform(y_train, dataset_train)
 
-      plotting(y_pred, y_train,'y_pred','y_train','train data predictions with LSTM')
-      print('Mean sqaure error of y_train and predicted value for LSTM is: ', mean_squared_error(y_train, y_pred))
+        plotting(y_pred, y_train,'y_pred','y_train','train data predictions with LSTM')
+        print('Mean sqaure error of y_train and predicted value for LSTM is: ', mean_squared_error(y_train, y_pred))
 
-      reshaped_vaidation_data = reshape(validation_data)
-      scaled_dataset_validation = preprocessing_data(reshaped_vaidation_data)
+        reshaped_vaidation_data = reshape(validation_data)
+        scaled_dataset_validation = preprocessing_data(reshaped_vaidation_data)
   
-      X_test, y_test = create_x_y(validation_length, scaled_dataset_validation)   #getting test data and reshaping them
+        X_test, y_test = create_x_y(validation_length, scaled_dataset_validation)   #getting test data and reshaping them
 
-      y_pred_of_test = prediction(X_test, model_lstm, model_name, weights1)  #predicting the output
+        y_pred_of_test = prediction(X_test, model_lstm, model_name, weights1)  #predicting the output
 
-      y_pred_of_test = inverse_fit_transform(y_pred_of_test, dataset_train)   #inverse_transform to get the actual value 
-      y_test = inverse_fit_transform(y_test, dataset_train)
+        y_pred_of_test = inverse_fit_transform(y_pred_of_test, dataset_train)   #inverse_transform to get the actual value 
+        y_test = inverse_fit_transform(y_test, dataset_train)
 
-      plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','Test data predictions with LSTM')
-      print('Mean sqaure error of y_train and predicted value for LSTM is: ', mean_squared_error(y_test, y_pred_of_test))
-
+        plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','Test data predictions with LSTM')
+        print('Mean sqaure error of y_train and predicted value for LSTM is: ', mean_squared_error(y_test, y_pred_of_test))
+      except:
+        print('You might have chose predict mode before train mode. Train the model first before predicting values.')
 # Giving the path of the csv file
 
 def reading_file_csv(csv_file, model_name, mode):
@@ -310,6 +141,7 @@ def reading_file_csv(csv_file, model_name, mode):
   weights1 = 'my_weights1.model'
   data_reading(csv_file, model_name, mode, weights, weights1)
   print('done')
+
 
 if __name__ == '__main__':
   reading_file_csv(args.csv_file, args.model_name, args.mode)

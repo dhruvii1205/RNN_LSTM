@@ -46,6 +46,7 @@ args = parser.parse_args()
 def data_reading(filename, model_name, mode, weights, weights1):
   data = pd.read_csv(filename) # reading the csv file
   data.info() # to understand the coulumns and their type
+
   train_length, validation_length = train_test_splitting(data)    # train_test_split data 
 
   train_data = convert_datetime_object(data, train_length)   # getting train data
@@ -63,7 +64,7 @@ def data_reading(filename, model_name, mode, weights, weights1):
 
       # RNN model
       
-      model = rnn_model(X_train)   
+      model = rnn_model(X_train.shape)   
 
       history, model= model_fitting(model, X_train, y_train, epochs, batch_size)
       
@@ -71,16 +72,8 @@ def data_reading(filename, model_name, mode, weights, weights1):
       
 
     if mode == 'predict':
-      
-      try:
-        model = rnn_model(X_train)  
-        y_pred = prediction(X_train, model, model_name, weights)
-
-        y_pred = inverse_fit_transform(y_pred, dataset_train)
-        y_train = inverse_fit_transform(y_train, dataset_train)
-
-        plotting(y_pred, y_train,'y_pred','y_train','train data predictions with RNN')
-        print('Mean sqaure error of y_train and predicted value for RNN is: ', mean_squared_error(y_train, y_pred))
+ 
+        model = rnn_model(X_train.shape)  
 
         reshaped_vaidation_data = reshape(validation_data)
         scaled_dataset_validation = preprocessing_data(reshaped_vaidation_data)
@@ -92,10 +85,9 @@ def data_reading(filename, model_name, mode, weights, weights1):
         y_pred_of_test = inverse_fit_transform(y_pred_of_test, dataset_train)   #inverse_transform to get the actual value 
         y_test = inverse_fit_transform(y_test, dataset_train)
 
-        plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','test data predictios with RNN')
+        plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','test data predictios with RNN', 'rnn_plot.png')
         print('Mean sqaure error of y_test and predicted value for RNN is: ', mean_squared_error(y_test, y_pred_of_test))
-      except:
-        print('You might have chose predict mode before train mode. Train the model first before predicting values.')
+      
   
   
   if model_name == 'lstm':
@@ -104,22 +96,14 @@ def data_reading(filename, model_name, mode, weights, weights1):
       batch_size = 32
 
       # LSTM model
-      model_lstm = lstm_model(X_train) 
+      model_lstm = lstm_model(X_train.shape) 
       history, model_lstm= model_fitting(model_lstm, X_train, y_train, epochs, batch_size)
       model_lstm.save_weights(weights1)
   
     if mode == 'predict':
       
-      try:
-        model_lstm = lstm_model(X_train) 
-        y_pred = prediction(X_train, model_lstm, model_name, weights1)
-
-        y_pred = inverse_fit_transform(y_pred, dataset_train)
-        y_train = inverse_fit_transform(y_train, dataset_train)
-
-        plotting(y_pred, y_train,'y_pred','y_train','train data predictions with LSTM')
-        print('Mean sqaure error of y_train and predicted value for LSTM is: ', mean_squared_error(y_train, y_pred))
-
+        model_lstm = lstm_model(X_train.shape) 
+        
         reshaped_vaidation_data = reshape(validation_data)
         scaled_dataset_validation = preprocessing_data(reshaped_vaidation_data)
   
@@ -130,10 +114,9 @@ def data_reading(filename, model_name, mode, weights, weights1):
         y_pred_of_test = inverse_fit_transform(y_pred_of_test, dataset_train)   #inverse_transform to get the actual value 
         y_test = inverse_fit_transform(y_test, dataset_train)
 
-        plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','Test data predictions with LSTM')
+        plotting(y_pred_of_test, y_test,'y_pred_of_test','y_test','Test data predictions with LSTM', 'lstm_figure.png')
         print('Mean sqaure error of y_train and predicted value for LSTM is: ', mean_squared_error(y_test, y_pred_of_test))
-      except:
-        print('You might have chose predict mode before train mode. Train the model first before predicting values.')
+     
 # Giving the path of the csv file
 
 def reading_file_csv(csv_file, model_name, mode):

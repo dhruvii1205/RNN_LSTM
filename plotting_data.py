@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 # Data Plotting
 
-def plotting(y_pred, y_train,label_x,label_y, title):
+def plotting(y_pred, y_train,label_x,label_y, title, figure_path):
 
   # visualisation
   plt.figure(figsize = (16,10))
@@ -12,3 +12,4 @@ def plotting(y_pred, y_train,label_x,label_y, title):
   plt.title(title)
   plt.legend()
   plt.show()
+  plt.savefig(figure_path)

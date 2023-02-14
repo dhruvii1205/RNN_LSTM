@@ -6,7 +6,7 @@ from keras.layers import LSTM
 
 # RNN model creation
 
-def rnn_model(X_train):    
+def rnn_model(X_train_shape):    
   # initializing the RNN
   model = Sequential()
 
@@ -15,7 +15,7 @@ def rnn_model(X_train):
       SimpleRNN(units = 50,
                 activation = "tanh", 
                 return_sequences = True, 
-                input_shape = (X_train.shape[1],1))
+                input_shape = (X_train_shape[1],1))
               )
 
   model.add(Dropout(0.2))

@@ -1,23 +1,23 @@
 # RNN_LSTM
 stock price predictions with rnn and lstm model.
 
-### How to set-up the project?
+### How to setup the project?
 * Firstly, download the repository. Refer this link if stuck: https://blog.hubspot.com/website/download-from-github
 * After downloading the repository, download the libraries mentioned in requirements.txt file, if not.
-* Open the stock_price_prediction.py file in any editor and run the code on local computer. 
+* Open the stock_price_prediction.py file in any editor and run the code on your local computer. 
 * As the script takes dynamic arguements as input write **python3 stock_price_prediction_final.py(file name with extension) -c Tesla.csv (data file name wih extension) -m rnn (model name which you waant to use in lower-case) -mode train(train/predict)**
 * If you want to try LSTM model then insert lstm with -m
+* You will have to train the model first before using predict mode otherwise it will generate an except message. 
 
 ### What each funcionality is doing?
 
-* Datetime object and feature selection
 ```
 def convert_datetime_object(data, length_train_validation):
   train_test_data = data[:length_train_validation].iloc[:,:2] 
   train_test_data['Date'] = pd.to_datetime(train_test_data['Date'])  # converting to date time object
   return train_test_data    #returning the data
 ```
-
+* Datetime object and feature selection
 * By using this function, we will get first two columns and will work on them for the rest of the code which is opening stock price and date. 
 * To predict the next opening stock price we will be using these two columns. 
 
@@ -95,3 +95,9 @@ def prediction(X_train, model, model_name, weights):
 * By giving train as a parameter, the model will be trained and the weights will be saved to a specific path.
 * BY giving predict as a parameter, we will use the saved weights by using **load_weight** function and predict the values for train and test dataset along with plotting the output for both the case. 
 * We will also print the **MSE (Mean Sqaured Error)** to understand which model is giving better result. 
+
+### What to expect after giving input?
+* After giving arguement in the given format 
+* If you have entered predict as a mode to any model before train mode,, then you can expect a message from except block saying, *You might have chose predict mode before train mode. Train the model first before predicting values.*
+* If you have entered train in the mode, you can expect model training 
+* If you have entered predict in the mode, you can expect 2 graphs popping up. The first one is for the train dataset for the given model and second one is for the test dataset. We will be able to check the MSE(Mean Sqaure Error) result as an output for both of them. 

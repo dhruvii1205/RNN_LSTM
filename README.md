@@ -114,4 +114,4 @@ def prediction(X_train, model, model_name, weights):
     predict = model.predict(X_train)
     return predict
 ```
-* Predict function will predict the test data by unloading the weights and using them to predict the output.
+* Predict function will predict the test data by loading the weights and using them to predict the output.

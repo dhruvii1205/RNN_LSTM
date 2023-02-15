@@ -5,10 +5,12 @@ stock price predictions with rnn and lstm model.
 * Firstly, you need to download this repository. 
 * Open the repository on your local computer and run the main.py file. 
 * After that, as this script is using argparse() method we can give dynamic input in the terminal
-* The syntax is: *python3 main.py -c Tesla.csv(data file along with extension) -m rnn (model type either rnn or lstm) -mode train(either train or predict)
+* The syntax is: *python3 main.py -c Tesla.csv(data file along with extension) -m rnn (model type either rnn or lstm) -mode train(either train or predict)*
 * If you want to train or predict using lstm model give lstm as -m input.
+* utils.py file contains all the functions such as pre-processing, plotting_data etc.
+* models.py file contains the functions to call lstm or rnn model and model fit function. 
 
-### What output we should expect?
+### What output should we expect?
 * If we give train as an input to -mode then the given model will be train and model weights will be saved at specific destination.
 * If we give predict as an input to -mode then the saved weights will be loaded and we will predict the test dataset accodingly. 
 * We will also be able to see the graph of actual output of test data and predicted output. 
@@ -44,7 +46,7 @@ def create_x_y(data_length, dataset_scaled):
 * By calling this function we can make a list of X_data and y_data.
 * In which X_data will contain the input of the model and y_data will be the output we should expect.
 * time_step is a variable which is taking the number of input values for which we will predict y_data. 
-* If time_step value is 50 thn after reshape we will get (1823,50,1) 
+* If time_step value is 50 then after reshape we will get (1823,50,1) 
 
 #### Data pre-processing
 

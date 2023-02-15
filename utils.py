@@ -113,5 +113,6 @@ def plotting(y_pred, y_train,label_x,label_y, title, figure_path):
   plt.ylabel("Opening price")
   plt.title(title)
   plt.legend()
-  plt.show()
   plt.savefig(figure_path)
+  plt.show()
+  
